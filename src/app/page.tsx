@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Quiz } from "@/types/quiz";
+import type { Quiz } from "./types/quiz";
 
 export default function Home() {
   const [topic, setTopic] = useState("System Design");
@@ -25,9 +25,10 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to generate quiz");
       setQuiz(data);
-    } catch (e: any) {
-      setError(e?.message ?? "Something went wrong");
-      setQuiz(null);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : typeof e === "string" ? e : undefined;
+  setError(message ?? "Something went wrong");
+  setQuiz(null);
     } finally {
       setLoading(false);
     }

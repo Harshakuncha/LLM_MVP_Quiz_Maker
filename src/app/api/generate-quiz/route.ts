@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+import { QuizQuestion } from "@/app/types/quiz";
 
 export async function POST(req: NextRequest) {
   try {
@@ -54,26 +55,27 @@ TOPIC: ${topic}
       quiz = match ? JSON.parse(match[0]) : null;
     }
 
-    if (
-      !quiz ||
-      typeof quiz.topic !== "string" ||
-      !Array.isArray(quiz.questions) ||
-      quiz.questions.length !== 5 ||
-      quiz.questions.some(
-        (q: any) =>
-          typeof q.question !== "string" ||
-          !Array.isArray(q.options) ||
-          q.options.length !== 4 ||
-          typeof q.answerIndex !== "number" ||
-          q.answerIndex < 0 ||
-          q.answerIndex > 3
-      )
-    ) {
-      return NextResponse.json({ error: "Malformed quiz from model." }, { status: 500 });
-    }
+if (
+  !quiz ||
+  typeof quiz.topic !== "string" ||
+  !Array.isArray(quiz.questions) ||
+  quiz.questions.length !== 5 ||
+  quiz.questions.some(
+    (q: QuizQuestion) =>
+      typeof q.question !== "string" ||
+      !Array.isArray(q.options) ||
+      q.options.length !== 4 ||
+      typeof q.answerIndex !== "number" ||
+      q.answerIndex < 0 ||
+      q.answerIndex > 3
+  )
+) {
+  return NextResponse.json({ error: "Malformed quiz from model." }, { status: 500 });
+}
 
     return NextResponse.json(quiz, { status: 200 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? "Unknown error" }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
